@@ -1,0 +1,21 @@
+{
+  "name": "MemcacheSession",
+  "version": "0.0.1",
+  "description": "a solution for memcache session storeage",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "memcache":"",
+    "express":"",
+    "connect-memcached":""
+  },
+  "keywords": [
+    "memcache",
+    "session",
+    "share"
+  ],
+  "author": "iflamed@gmail.com",
+  "license": "BSD-2-Clause"
+}
