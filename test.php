@@ -12,9 +12,13 @@ $cacheConfig = array(
 			'weight'=>4,
 	)
 );
-MemcacheSession::init($cacheConfig);
+$keyPrefix='ruobiyi.com';
+MemcacheSession::init($cacheConfig,$keyPrefix);
 session_start();
 $_SESSION['serialisation'] = 'should be in json';
+if (!isset($_SESSION['a'])) {
+	$_SESSION['a'] = 0;
+}
 $_SESSION['a']++;
 var_dump($_SESSION);
 ?>
