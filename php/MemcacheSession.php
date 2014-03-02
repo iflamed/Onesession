@@ -1,5 +1,4 @@
 <?php
-
 if(!interface_exists('SessionHandlerInterface')){
     /**
      * SessionHandlerInterface
@@ -96,11 +95,10 @@ class MemcacheSessionHandler implements SessionHandlerInterface
 {
     
     private $lifetime = 0;
-    private $memcache = null;
-    public static $config = array();
-    public static $useMemcached=false;
+    private $store = null;
     public static $keyPrefix = 'sessions/';
-
+    public static $config = array();
+    public static $storeName = 'MemcacheStore';
     /**
      * init a memcache session handler, php>=5.4
      * @param  array $config 
@@ -115,9 +113,10 @@ class MemcacheSessionHandler implements SessionHandlerInterface
      * )
      * @return MemcacheSessionHandler54
      */
-    public static function init($config,$keyPrefix='',$useMemcached=false){
+    public static function init($storeClassName,$config,$keyPrefix=''){
+        self::$storeName = $storeClassName;
+        require dirname(__FILE__).'/store/'.$storeClassName.".php";
         self::$config = $config;
-        self::$useMemcached = $useMemcached;
         if ($keyPrefix) {
             self::$keyPrefix=$keyPrefix;
         }
@@ -128,42 +127,16 @@ class MemcacheSessionHandler implements SessionHandlerInterface
         return new MemcacheSessionHandler();
     }
 
-    public function getMemCache(){
-        if($this->memcache!==null)
-            return $this->memcache;
-        else
-        {
-            $extension=self::$useMemcached ? 'memcached' : 'memcache';
-            if(!extension_loaded($extension))
-                throw new Exception("MemcacheSession requires PHP {$extension} extension to be loaded");
-            return $this->memcache=self::$useMemcached ? new Memcached : new Memcache;
-        }
-    }
 
     /**
      * Constructor
      */
     public function __construct(){
-        $this->setServers();
         $this->setSessionHandler();
+        $storeName = self::$storeName;
+        $this->store = $storeName::getStore(self::$config);
     }
 
-    public function setServers(){
-        $this->getMemCache();
-        foreach (self::$config as $key => $server) {
-            $host = $server['host'];
-            $port = isset($server['port'])?$server['port']:11211;
-            $persistent = isset($server['persistent'])?$server['persistent']:true;
-            $weight = isset($server['weight'])?$server['weight']:50;
-            $timeout = isset($server['timeout'])?$server['timeout']:1;
-            $retry_interval = isset($server['retry_interval'])?$server['retry_interval']:15;
-            $status = isset($server['status'])?$server['status']:true;
-            if(self::$useMemcached)
-                $$this->memcache->addServer($host,$port,$weight);
-            else
-                $this->memcache->addServer($host, $port,$persistent,$weight,$timeout,$retry_interval,$status);
-        }
-    }
 
     public function setSessionHandler(){
         session_set_save_handler($this, true);
@@ -174,7 +147,7 @@ class MemcacheSessionHandler implements SessionHandlerInterface
      */
     public function __destruct(){
         session_write_close();
-        (self::$useMemcached==false)?$this->memcache->close():'';
+        $this->store->close();
     }
  
     /**
@@ -183,6 +156,7 @@ class MemcacheSessionHandler implements SessionHandlerInterface
      */
     public function open($savePath, $sessionName){
         $this->lifetime = ini_get('session.gc_maxlifetime');
+        $this->store->open();
         return true;
     }
  
@@ -193,7 +167,7 @@ class MemcacheSessionHandler implements SessionHandlerInterface
      */
     public function read($id){
         $tmp = $_SESSION;
-        $_SESSION = json_decode($this->memcache->get(self::$keyPrefix."{$id}"), true);
+        $_SESSION = $this->store->get(self::$keyPrefix."{$id}");
         if(isset($_SESSION) && !empty($_SESSION) && $_SESSION != null){
             $new_data = session_encode();
             $_SESSION = $tmp;
@@ -215,7 +189,7 @@ class MemcacheSessionHandler implements SessionHandlerInterface
         session_decode($data);
         $new_data = $_SESSION;
         $_SESSION = $tmp;
-        return self::$useMemcached?$this->memcache->set(self::$keyPrefix."{$id}", json_encode($new_data), $this->lifetime):$this->memcache->set(self::$keyPrefix."{$id}", json_encode($new_data), 0, $this->lifetime);
+        return $this->store->set(self::$keyPrefix."{$id}", $new_data, $this->lifetime);
     }
  
     /**
@@ -224,7 +198,7 @@ class MemcacheSessionHandler implements SessionHandlerInterface
      * @return boolean True if memcached was able delete session data
      */
     public function destroy($id){
-        return $this->memcache->delete(self::$keyPrefix."{$id}");
+        return $this->store->delete(self::$keyPrefix."{$id}");
     }
  
     /**
@@ -279,13 +253,13 @@ class MemcacheSessionHandlerCompatible extends MemcacheSessionHandler
 class MemcacheSession
 {
     
-    public static function init($config,$keyPrefix='',$useMemcached=false)
+    public static function init($storeClassName,$config,$keyPrefix='')
     {
         $phpVersion = phpVersion();
         if (version_compare($phpVersion, '5.4')!=-1){
-            return MemcacheSessionHandler::init($config,$keyPrefix,$useMemcached);
+            return MemcacheSessionHandler::init($storeClassName,$config,$keyPrefix);
         }else{
-            return MemcacheSessionHandlerCompatible::init($config,$keyPrefix,$useMemcached);
+            return MemcacheSessionHandlerCompatible::init($storeClassName,$config,$keyPrefix);
         }
     }
 }

@@ -1,14 +1,18 @@
 <?php
 require 'php/MemcacheSession.php';
 $cacheConfig = array(
-	array(
-			'host'=>'127.0.0.1',
-			'port'=>11211,
-			'weight'=>6,
-	)
+	'config'=>array(
+		array(
+				'host'=>'127.0.0.1',
+				'port'=>11211,
+				'weight'=>6,
+		),
+	),
+	'useMemcached'=>false,
 );
 $keyPrefix='ruobiyi.com';
-MemcacheSession::init($cacheConfig,$keyPrefix);
+$storeClassName = 'MemcacheStore';
+MemcacheSession::init($storeClassName,$cacheConfig,$keyPrefix);
 session_start();
 $_SESSION['serialisation'] = 'should be in json';
 if (!isset($_SESSION['a'])) {

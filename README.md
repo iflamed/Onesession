@@ -7,7 +7,6 @@ A session solution for multiple language development
 
 Finish the surpport php session lib with the Memcache/Memcached extension
 
-# Todo
+# Version 0.2
 
-Before integrate session with nodejs,the php session need to cookie-signature class
-[node-cookie-signature](https://github.com/visionmedia/node-cookie-signature/blob/master/index.js)
+PHP add a store interface and add the memcache storage client
