@@ -210,6 +210,7 @@ class MemcacheSessionHandler implements SessionHandlerInterface
      * @return boolean True if memcached was able to write the session data
      */
     public function write($id, $data){
+        $_SESSION['cookie']=session_get_cookie_params();
         $tmp = $_SESSION;
         session_decode($data);
         $new_data = $_SESSION;

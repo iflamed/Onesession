@@ -2,14 +2,9 @@
 require 'php/MemcacheSession.php';
 $cacheConfig = array(
 	array(
-			'host'=>'10.16.1.240',
-			'port'=>10002,
+			'host'=>'127.0.0.1',
+			'port'=>11211,
 			'weight'=>6,
-	),
-	array(
-			'host'=>'10.16.1.240',
-			'port'=>10003,
-			'weight'=>4,
 	)
 );
 $keyPrefix='ruobiyi.com';
