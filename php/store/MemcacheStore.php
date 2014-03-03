@@ -15,7 +15,7 @@ class MemcacheStore implements StoreInterface
 		self::$useMemcached = $useMemcached;
 		$this->setServers();
 	}
-	//单例方法,用于访问实例的公共的静态方法
+
 	public static function getStore($storeConfig){
 		if(!(self::$_store instanceof self)){
 			$config = $storeConfig['config'];

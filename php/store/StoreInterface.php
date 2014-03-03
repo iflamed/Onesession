@@ -5,5 +5,6 @@ interface StoreInterface{
 	public function get($id);
 	public function delete($id);
 	public function close();
+	public static function getStore($storeConfig);
 }
 ?>
