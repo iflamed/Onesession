@@ -1,10 +1,10 @@
 <?php
-require 'php/MemcacheSession.php';
+require 'vendor/autoload.php';
 $cacheConfig = array(
 	'config'=>array(
 		array(
-				'host'=>'127.0.0.1',
-				'port'=>11211,
+				'host'=>'10.16.1.240',
+				'port'=>10003,
 				'weight'=>6,
 		),
 	),
@@ -12,7 +12,7 @@ $cacheConfig = array(
 );
 $keyPrefix='ruobiyi.com';
 $storeClassName = 'MemcacheStore';
-MemcacheSession::init($storeClassName,$cacheConfig,$keyPrefix);
+Onesession\HttpSession::init($storeClassName,$cacheConfig,$keyPrefix);
 session_start();
 $_SESSION['serialisation'] = 'should be in json';
 if (!isset($_SESSION['a'])) {

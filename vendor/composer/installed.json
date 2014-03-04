@@ -1,0 +1,37 @@
+[
+    {
+        "name": "iflamed/onesession",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/iflamed/onesession_php.git",
+            "reference": "91b7fc93d11ba08487692b6ae05c64c937b84fa4"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/iflamed/onesession_php/zipball/91b7fc93d11ba08487692b6ae05c64c937b84fa4",
+            "reference": "91b7fc93d11ba08487692b6ae05c64c937b84fa4",
+            "shasum": ""
+        },
+        "time": "2014-03-04 04:08:24",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "Onesession\\": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "iflamed",
+                "email": "iflamed@gmail.com"
+            }
+        ],
+        "description": "a session solution for mult language development"
+    }
+]
