@@ -1,17 +1,149 @@
----
-layout: default
-title: Your New Jekyll Site
----
+<!DOCTYPE html>
+<html>
 
-<ul class="cbp_tmtimeline">
-	{% for post in site.posts %}
-	<li>
-		<time class="cbp_tmtime" datetime="2013-04-10 18:30"><span>{{ post.date | date_to_string }}</span> <span>{{ post.date | date:"%R" }}</span></time>
-		<div class="cbp_tmicon cbp_tmicon-phone"></div>
-		<div class="cbp_tmlabel">
-			<h2>{{ post.title }}</h2>
-			<p>Winter purslane courgette pumpkin quandong komatsuna fennel green bean cucumber watercress. Pea sprouts wattle seed rutabaga okra yarrow cress avocado grape radish bush tomato ricebean black-eyed pea maize eggplant. Cabbage lentil cucumber chickpea sorrel gram garbanzo plantain lotus root bok choy squash cress potato summer purslane salsify fennel horseradish dulse. Winter purslane garbanzo artichoke broccoli lentil corn okra silver beet celery quandong. Plantain salad beetroot bunya nuts black-eyed pea collard greens radish water spinach gourd chicory prairie turnip avocado sierra leone bologi.</p>
-		</div>
-	</li>
-    {% endfor %}
-</ul>
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Onesession : A session solution for multiple language development" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Onesession</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/iflamed/Onesession">View on GitHub</a>
+
+          <h1 id="project_title">Onesession</h1>
+          <h2 id="project_tagline">同域跨语言开发环境方案</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/iflamed/Onesession/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/iflamed/Onesession/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>Onesession 简介</h3>
+        <p>
+          Onesession 致力于解决在同一个域名的后端使用多个语言进行开发时共享session  的问题。多个语言前端可以使用nginx 进行代理。nginx  可以根据url转发相应请求到不同的语言环境下。由此后端可以取到对应的session  cookie，使用这个cookie 作为key 就可以在存储中心取到 session 数据。目前支持的存储中心只有Memcache，很快基于redis 和 数据库的方案就会出来。能够集成的语言环境目前也只有php 和 nodejs。
+          <br>
+          下一步将会支持的语言是python和java。
+        </p>
+        <h3>
+<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>PHP 开发环境</h3>
+
+<p>PHP 开发环境只需要通过composer 安装 <a href="https://packagist.org/packages/iflamed/onesession">iflamed/onesession</a> 包即可简单使用。你可以通过在composer.json 中require iflamed/onesession 即可 或者 直接安装。</p>
+
+<pre><code>$ composer require iflamed/onesession:dev-master
+</code></pre>
+<p>
+  下面是一个通过composer 安装iflamed/onesession 的demo 。
+</p>
+<pre>
+  <code>
+        require 'vendor/autoload.php';
+        $cacheConfig = array(
+            'config'=>array(
+                array(
+                        'host'=>'127.0.0.1',
+                        'port'=>11211,
+                        'weight'=>10,
+                ),
+            ),
+            'useMemcached'=>false,
+        );
+        $keyPrefix='localhost';
+        $storeClassName = 'MemcacheStore';
+        Onesession\HttpSession::init($storeClassName,$cacheConfig,$keyPrefix);
+        session_start();
+        $_SESSION['serialisation'] = 'should be in json';
+        if (!isset($_SESSION['a'])) {
+            $_SESSION['a'] = 0;
+        }
+        $_SESSION['a']++;
+        var_dump($_SESSION);
+  </code>
+</pre>
+
+<h3>
+<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Nodejs 开发环境</h3>
+
+<p>Nodejs 开发环境需要使用onesession 包。这个包是一个完整的connect middleware。所以完全兼容express、sail.js 等使用connect 处理session的环境。</p>
+
+<pre><code>$ npm install onesession</code></pre>
+<p>下面是一个使用 onesession 例子</p>
+<pre><code>
+  var express = require('express');
+
+  // pass the express to the connect memcached module
+  // allowing it to inherit from express.session.Store
+  var MemcachedStore = require('connect-memcached')(express);
+  var onesession = require('onesession');
+  var app = express();
+
+  app.use(express.favicon());
+
+  // request logging
+  app.use(express.logger());
+
+  // required to parse the session cookie
+  app.use(express.cookieParser());
+
+  // Populates:
+  // - req.session
+  // - req.sessionStore
+  // - req.sessionID (or req.session.id)
+
+  app.use(onesession({
+    secret: 'not used',
+    store: new MemcachedStore({
+      hosts: [ '127.0.0.1:11211' ] // Change this to your memcache server(s). See Options for additional info.
+    })
+  }));
+
+  app.get('/', function(req, res){
+    if (req.session.views) {
+      ++req.session.views;
+    } else {
+      req.session.views = 1;
+    }
+    res.send('Viewed &ltstrong&gt' + req.session.views + '&lt/strong&gt times.');
+  });
+
+  app.listen(3000);
+  console.log('Express app started on port 3000');
+</code>
+</pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Onesession maintained by <a href="https://github.com/iflamed">iflamed</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-48623694-2");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
